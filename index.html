@@ -1,0 +1,90 @@
+<!doctype html>
+<!--模板： http://todomvc.com/examples/vue/-->
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Template • TodoMVC</title>
+		<link rel="stylesheet" href="node_modules/todomvc-common/base.css">
+		<link rel="stylesheet" href="node_modules/todomvc-app-css/index.css">
+		<!-- CSS overrides - remove if you don't need it -->
+		<link rel="stylesheet" href="css/app.css">
+	</head>
+	<body>
+		<section class="todoapp" id="app">
+			<header class="header">
+				<h1>{{title}}</h1>
+				<input @keyup.enter="addNewItem" class="new-todo" placeholder="What needs to be done?" v-focus>
+			</header>
+			<!-- This section should be hidden by default and shown when there are todos -->
+			<!--
+				1.使用template作为一个虚拟节点， 
+				2.可以定义一个div使用v-show，但是这样会增加一层dom结构
+				3.也可以在main和footer上分别加v-show
+			-->
+			<template v-if="items.length">
+				<section class="main">
+					<input id="toggle-all" class="toggle-all" type="checkbox" v-model="toggleAll">
+					<label for="toggle-all">Mark all as complete</label>
+					<ul class="todo-list">
+						<li v-for="(item, index) of filterItems" :class="{completed : item.completed, editing: item === currentItem}">
+							<div class="view">
+								<input class="toggle" type="checkbox" v-model="item.completed">
+								<label @dblclick="toEdit(item)">{{item.content}}</label>
+								<button class="destroy" :value="item.id" @click="removeItem(index)"></button>
+							</div>
+							<!--
+								单向绑定 v-bind:value设置为item.content
+								input框绑定esc键盘事件，取消编辑状态, 
+								并且input输入框值变化不会影响item.content,因为采用单向绑定
+
+								input框绑定回车事件和失去焦点事件，事件都是完成编辑、保存数据
+								由于finishEdit需要传入参数，所以 $event 是代表 原生的dom事件
+								如果finishEdit不需要传入参数，那么不需要显式的传入$event，
+								直接在finishEdit定义的时候定义一个event来接收即可，默认vue会传入$event, 如上面的addNewItem方法
+							-->
+							<input class="edit" @keyup.enter="finishEdit(item, index, $event)" 
+								@blur="finishEdit(item, index, $event)" 
+								@keyup.esc="cancelEdit"
+								:value="item.content"
+								v-todo-focus="item === currentItem">
+						</li>
+					</ul>
+				</section>
+				<!-- This footer should hidden by default and shown when there are todos -->
+				<footer class="footer">
+					<!-- This should be `0 items left` by default -->
+					<span class="todo-count">未完成数:&nbsp;<strong>{{unCompletedCount}}</strong></span>
+					
+					<!-- Remove this if you don't implement routing -->
+					<ul class="filters">
+						<li>
+							<a :class="{selected : filterStatus === 'all'}" href="#/">所有</a>
+						</li>
+						<li>
+							<a :class="{selected : filterStatus === 'active'}" href="#/active">活动中</a>
+						</li>
+						<li>
+							<a :class="{selected : filterStatus === 'completed'}" href="#/completed">已完成</a>
+						</li>
+					</ul>
+					<!-- Hidden if no completed items are left ↓ -->
+					<!-- 这里使用计算属性， 总任务数量 > 未完成任务数量，则说明有复选框选中任务，那么显示清除按钮-->
+					<button class="clear-completed" @click="removeCompleted" v-show="items.length > unCompletedCount">清除已完成项</button>
+				</footer>
+			</template>
+		</section>
+		<footer class="info">
+			<p>Double-click to edit a todo</p>
+			<!-- Remove the below line ↓ -->
+			<p>Template by <a href="http://sindresorhus.com">Sindre Sorhus</a></p>
+			<!-- Change this out with your name and url ↓ -->
+			<p>Created by <a href="http://todomvc.com">you</a></p>
+			<p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+		</footer>
+		<!-- Scripts here. Don't remove ↓ -->
+		<script src="node_modules/vue/dist/vue.js"></script>
+		<script src="node_modules/todomvc-common/base.js"></script>
+		<script src="js/app.js"></script>
+	</body>
+</html>
